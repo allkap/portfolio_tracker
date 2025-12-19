@@ -12,6 +12,7 @@
 
 ### Transaction (IN/OUT)
 Движение средств по позиции: ввод (IN) или вывод (OUT).
+Хранит дату, сумму, валюту и комментарий операции, а также связь с позицией.
 
 ### Yield/Income
 Начисленный доход (проценты, награды, комиссии) по позиции.
@@ -64,6 +65,7 @@
 - **date**
 - **amount**
 - **currency**
+- **comment** (опционально, описание операции)
 - **network_id**
 - **protocol_id**
 - **tx_hash** (опционально для on-chain)
@@ -157,6 +159,7 @@ erDiagram
     date date
     decimal amount
     string currency
+    string comment
     uuid network_id FK
     uuid protocol_id FK
     string tx_hash
@@ -281,6 +284,7 @@ erDiagram
         "date": {"type": "string", "format": "date"},
         "amount": {"type": "number"},
         "currency": {"type": "string"},
+        "comment": {"type": ["string", "null"]},
         "network_id": {"type": "string", "format": "uuid"},
         "protocol_id": {"type": "string", "format": "uuid"},
         "tx_hash": {"type": ["string", "null"]}
@@ -312,3 +316,41 @@ erDiagram
   }
 }
 ```
+
+## 5. Агрегации по позиции
+
+Текущие агрегаты вычисляются по Transaction и (опционально) Yield, выражаются в валюте позиции
+или в базовой валюте портфеля после конвертации.
+
+- **current_deposit** — текущий депозит по позиции: сумма IN минус сумма OUT.
+- **total_in** — общий вход: сумма всех транзакций типа IN.
+- **total_out** — общий выход: сумма всех транзакций типа OUT.
+- **net_position** — чистая позиция: current_deposit + накопленный доход (если учитываем Yield).
+
+Формулы (без конвертации валют):
+
+```
+total_in = Σ Transaction.amount where type = IN
+total_out = Σ Transaction.amount where type = OUT
+current_deposit = total_in - total_out
+net_position = current_deposit + Σ Yield.amount
+```
+
+## 6. UI/UX требования для операций
+
+### Форма ввода операции
+Минимальные поля:
+- **date** (дата операции)
+- **type** (IN/OUT)
+- **amount** (сумма)
+- **currency** (валюта суммы)
+- **comment** (опционально)
+- **position_id** (скрыто, привязка к позиции)
+
+### История операций в карточке позиции
+В карточке позиции показывается список транзакций, отсортированных по убыванию даты:
+- дата
+- тип (IN/OUT)
+- сумма и валюта
+- комментарий (если есть)
+- ссылки на протокол/сеть или tx_hash (если доступно)
