@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio Tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Portfolio Tracker</p>
+          <h1>New Position</h1>
+          <p class="subtitle">
+            Создайте новую позицию, автоматически заполнив параметры по выбранному протоколу.
+          </p>
+        </div>
+      </header>
+
+      <section class="layout">
+        <form class="card form-card" id="position-form">
+          <div class="card-header">
+            <h2>Данные позиции</h2>
+            <p>Базовые поля для открытия позиции.</p>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Протокол / шаблон
+              <select id="protocol-template" name="template" required>
+                <option value="">Выберите шаблон</option>
+                <option value="aave">Aave Lending</option>
+                <option value="lido">Lido Staking</option>
+                <option value="uniswap">Uniswap LP</option>
+              </select>
+            </label>
+
+            <label>
+              Актив
+              <input id="asset" name="asset" type="text" placeholder="USDC" required />
+            </label>
+
+            <label>
+              Стратегия
+              <input
+                id="strategy"
+                name="strategy"
+                type="text"
+                placeholder="Lending"
+                required
+              />
+            </label>
+
+            <label>
+              Риск
+              <input id="risk" name="risk" type="text" placeholder="Medium" required />
+            </label>
+
+            <label>
+              Ожидаемый APR, %
+              <input
+                id="expected-apr"
+                name="expectedApr"
+                type="number"
+                step="0.1"
+                placeholder="6.5"
+                required
+              />
+            </label>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="transaction">
+            <div class="toggle-row">
+              <div>
+                <h3>Первая транзакция IN</h3>
+                <p class="muted">При необходимости добавьте депозит сразу.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="add-transaction" />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="transaction-fields" id="transaction-fields" aria-hidden="true">
+              <label>
+                Дата
+                <input id="tx-date" name="txDate" type="date" />
+              </label>
+              <label>
+                Сумма IN
+                <input id="tx-amount" name="txAmount" type="number" step="0.01" />
+              </label>
+              <label>
+                Валюта
+                <input id="tx-currency" name="txCurrency" type="text" placeholder="USDC" />
+              </label>
+              <label>
+                Комментарий
+                <input id="tx-comment" name="txComment" type="text" placeholder="Initial deposit" />
+              </label>
+            </div>
+          </div>
+
+          <button class="primary" type="submit">Создать позицию</button>
+        </form>
+
+        <section class="card preview-card">
+          <div class="card-header">
+            <h2>Карточки позиций</h2>
+            <p>После создания позиции карточка появится здесь.</p>
+          </div>
+          <div id="positions" class="positions"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
