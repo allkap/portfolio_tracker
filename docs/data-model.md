@@ -20,6 +20,12 @@
 ### Strategy
 Инвестиционная стратегия (например, стейкинг, лендинг, LP, фарминг).
 
+### Hypothesis
+Инвестиционная гипотеза с описанием ожидаемой доходности и условиями.
+
+### NextAction
+Следующее действие по гипотезе с дедлайном и напоминаниями.
+
 ### Asset
 Торгуемый актив или токен (например, USDC, ETH).
 
@@ -87,6 +93,36 @@
 - **category** (staking/lending/liquidity/farming/etc.)
 - **description**
 
+### Hypothesis
+- **id**
+- **description** (краткое описание гипотезы)
+- **expected_apr** (ожидаемый APR)
+- **conditions** (условия входа/валидации гипотезы)
+- **status** (draft/active/validated/invalidated/archived)
+- **created_at**
+- **updated_at**
+
+### HypothesisPosition (связь Hypothesis ↔ Position)
+- **id**
+- **hypothesis_id**
+- **position_id**
+
+### HypothesisStrategy (связь Hypothesis ↔ Strategy)
+- **id**
+- **hypothesis_id**
+- **strategy_id**
+
+### NextAction
+- **id**
+- **hypothesis_id**
+- **title**
+- **description** (опционально)
+- **deadline_at** (дедлайн выполнения)
+- **reminder_at** (дата/время напоминания)
+- **status** (open/done/cancelled)
+- **created_at**
+- **updated_at**
+
 ### Asset
 - **id**
 - **symbol**
@@ -122,6 +158,11 @@ erDiagram
   ASSET ||--o{ POSITION : underlying
   PROTOCOL ||--o{ POSITION : hosted_on
   STRATEGY ||--o{ POSITION : uses
+  HYPOTHESIS ||--o{ NEXT_ACTION : has
+  HYPOTHESIS ||--o{ HYPOTHESIS_POSITION : links
+  HYPOTHESIS ||--o{ HYPOTHESIS_STRATEGY : links
+  POSITION ||--o{ HYPOTHESIS_POSITION : links
+  STRATEGY ||--o{ HYPOTHESIS_STRATEGY : links
   RISK_RATING ||--o{ POSITION : risk
   NETWORK ||--o{ POSITION : operates_on
   PROTOCOL ||--o{ TRANSACTION : routes
@@ -183,6 +224,40 @@ erDiagram
     string name
     string category
     string description
+  }
+
+  HYPOTHESIS {
+    uuid id PK
+    string description
+    decimal expected_apr
+    string conditions
+    string status
+    datetime created_at
+    datetime updated_at
+  }
+
+  HYPOTHESIS_POSITION {
+    uuid id PK
+    uuid hypothesis_id FK
+    uuid position_id FK
+  }
+
+  HYPOTHESIS_STRATEGY {
+    uuid id PK
+    uuid hypothesis_id FK
+    uuid strategy_id FK
+  }
+
+  NEXT_ACTION {
+    uuid id PK
+    uuid hypothesis_id FK
+    string title
+    string description
+    datetime deadline_at
+    datetime reminder_at
+    string status
+    datetime created_at
+    datetime updated_at
   }
 
   ASSET {
@@ -315,6 +390,72 @@ erDiagram
         "source": {"type": "string"},
         "network_id": {"type": "string", "format": "uuid"},
         "protocol_id": {"type": "string", "format": "uuid"}
+      }
+    },
+    "Hypothesis": {
+      "type": "object",
+      "required": [
+        "id",
+        "description",
+        "expected_apr",
+        "conditions",
+        "status",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {"type": "string", "format": "uuid"},
+        "description": {"type": "string"},
+        "expected_apr": {"type": "number"},
+        "conditions": {"type": "string"},
+        "status": {
+          "type": "string",
+          "enum": ["draft", "active", "validated", "invalidated", "archived"]
+        },
+        "created_at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "HypothesisPosition": {
+      "type": "object",
+      "required": ["id", "hypothesis_id", "position_id"],
+      "properties": {
+        "id": {"type": "string", "format": "uuid"},
+        "hypothesis_id": {"type": "string", "format": "uuid"},
+        "position_id": {"type": "string", "format": "uuid"}
+      }
+    },
+    "HypothesisStrategy": {
+      "type": "object",
+      "required": ["id", "hypothesis_id", "strategy_id"],
+      "properties": {
+        "id": {"type": "string", "format": "uuid"},
+        "hypothesis_id": {"type": "string", "format": "uuid"},
+        "strategy_id": {"type": "string", "format": "uuid"}
+      }
+    },
+    "NextAction": {
+      "type": "object",
+      "required": [
+        "id",
+        "hypothesis_id",
+        "title",
+        "deadline_at",
+        "reminder_at",
+        "status",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {"type": "string", "format": "uuid"},
+        "hypothesis_id": {"type": "string", "format": "uuid"},
+        "title": {"type": "string"},
+        "description": {"type": ["string", "null"]},
+        "deadline_at": {"type": "string", "format": "date-time"},
+        "reminder_at": {"type": "string", "format": "date-time"},
+        "status": {"type": "string", "enum": ["open", "done", "cancelled"]},
+        "created_at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"}
       }
     }
   }
