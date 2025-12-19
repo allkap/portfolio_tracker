@@ -77,6 +77,7 @@
 - **amount**
 - **currency**
 - **type** (interest/reward/fee/other)
+- **source** (источник дохода: protocol/bonus/referral/etc.)
 - **network_id**
 - **protocol_id**
 
@@ -172,6 +173,7 @@ erDiagram
     decimal amount
     string currency
     string type
+    string source
     uuid network_id FK
     uuid protocol_id FK
   }
@@ -299,6 +301,7 @@ erDiagram
         "amount",
         "currency",
         "type",
+        "source",
         "network_id",
         "protocol_id"
       ],
@@ -309,6 +312,7 @@ erDiagram
         "amount": {"type": "number"},
         "currency": {"type": "string"},
         "type": {"type": "string", "enum": ["interest", "reward", "fee", "other"]},
+        "source": {"type": "string"},
         "network_id": {"type": "string", "format": "uuid"},
         "protocol_id": {"type": "string", "format": "uuid"}
       }
@@ -354,3 +358,42 @@ net_position = current_deposit + Σ Yield.amount
 - сумма и валюта
 - комментарий (если есть)
 - ссылки на протокол/сеть или tx_hash (если доступно)
+
+## 7. Формулы APR
+
+### Расчёт фактического APR (Real APR)
+Фактический APR считается на основе полученных доходов и времени удержания позиции.
+
+Обозначения:
+- **total_yield** = Σ Yield.amount (в валюте позиции или после конвертации в базовую валюту портфеля)
+- **principal** = текущий/входной размер позиции (Position.amount или current_deposit, в зависимости от бизнес-логики)
+- **holding_days** = (exit_date или today) − entry_date
+
+Формула:
+```
+real_apr = (total_yield / principal) * (365 / holding_days) * 100
+```
+
+Примечания:
+- Для открытых позиций используем текущую дату в качестве upper bound.
+- При наличии нескольких транзакций допускается считать principal как средневзвешенный депозит по времени.
+
+## 8. UI: сравнение Expected APR vs Real APR
+
+В карточке позиции отображается:
+- **Expected APR** (Position.expected_apr)
+- **Real APR** (Position.actual_apr, рассчитанный по формуле выше)
+- Индикация отклонения (например, +/− в % или цветом).
+
+## 9. График доходности во времени
+
+### По позиции
+Отображение временного ряда доходности:
+- Ось X: дата
+- Ось Y: накопленный доход или доходность (APR/ROI)
+- Источник данных: Yield по позиции
+
+### По портфелю
+Агрегация по всем позициям:
+- Сумма Yield по всем позициям за интервал
+- Отдельная линия для общей доходности портфеля
